@@ -77,6 +77,27 @@ class MULTISAVE_OT_RemovePathOperator(bpy.types.Operator):
 
 @persistent
 def run_multisave(scene):
+    if scene.render.is_movie_format:
+        bpy.app.handlers.render_complete.append(multisave)
+    else:
+        bpy.app.handlers.render_write.append(multisave)
+
+    bpy.app.handlers.render_complete.append(multisave_complete)
+
+
+def multisave_complete(scene):
+    if multisave in bpy.app.handlers.render_write:
+        bpy.app.handlers.render_write.remove(multisave)
+        bpy.app.handlers.render_complete.remove(multisave_complete)
+    else:
+        bpy.app.handlers.render_complete.remove(multisave)
+
+    bpy.app.handlers.render_complete.remove(multisave_complete)
+
+    print( bpy.app.handlers.render_complete)
+    print(bpy.app.handlers.render_write)
+
+def multisave(scene):
     filepath_src = scene.render.frame_path()
     filename = os.path.basename(filepath_src)
     for p in scene.multisave.paths:
@@ -89,6 +110,8 @@ def run_multisave(scene):
 
         filepath_target = os.path.join(p.path, filename)
         shutil.copyfile(filepath_src, filepath_target)
+
+
 
 
 classes = (
@@ -107,11 +130,11 @@ def register():
 
     bpy.types.Scene.multisave = bpy.props.PointerProperty(type=MULTISAVE_PG_Properties)
 
-    bpy.app.handlers.render_write.append(run_multisave)
+    bpy.app.handlers.render_init.append(run_multisave)
 
 
 def unregister():
-    bpy.app.handlers.render_write.remove(run_multisave)
+    bpy.app.handlers.render_init.remove(run_multisave)
     del bpy.types.Scene.multisave
     for cls in reversed(classes):
         bpy.utils.unregister_class(cls)
