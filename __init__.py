@@ -16,7 +16,7 @@ bl_info = {
     "author" : "Oliver Weissbarth",
     "description" : "",
     "blender" : (2, 80, 0),
-    "version" : (0, 0, 1),
+    "version" : (0, 0, 2),
     "location" : "Properties > Output",
     "warning" : "",
     "category" : "Generic"
